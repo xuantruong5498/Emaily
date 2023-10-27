@@ -1,11 +1,23 @@
 const express = require('express');
-const app = express ();
+const cookieSession = require('cookie-session');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-passport.use(new GoogleStrategy());
+const mongoose = require('mongoose');
+const keys = require('./config/keys');
+require('./models/users');
+require('./services/passport');
 
-// clientID 41817699578-ba4ccs3quh5uquuelppdthlud1ml7jc7.apps.googleusercontent.com
-// ClientSecret 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
+mongoose.connect(keys.mongoURI);
+
+const app = express ();
+
+app.use(cookieSession({
+    maxAge : 30*24*60*60*1000,
+    keys   : [keys.cookieKey]
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+require('./routes/authRoutes')(app);
 
 const PORT = process.env.PORT || 5000;
 app.listen(5000);
